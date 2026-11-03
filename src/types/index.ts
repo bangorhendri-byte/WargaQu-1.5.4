@@ -164,5 +164,33 @@ export interface FamilyNode {
   parentId: string | null;
   photo?: string;
   claimed?: boolean;
+  phone?: string;
+  city?: string;
+  birthYear?: string;
+  passedYear?: string;
+  isDeceased?: boolean;
+  bio?: string;
 }
+
+export interface FamilyPostComment {
+  id: string;
+  author: string;
+  text: string;
+  time: string;
+}
+
+export interface FamilyPost {
+  id: string;
+  authorName: string;
+  authorTrah: TrahType;
+  category: 'Pengumuman' | 'Syukuran' | 'Berita Duka' | 'Reuni' | 'Kabar Bahagia';
+  targetTrah: 'ALL' | TrahType;
+  content: string;
+  imageUrl?: string;
+  createdAt: string;
+  likes: number;
+  hasLiked?: boolean;
+  comments: FamilyPostComment[];
+}
+
 
