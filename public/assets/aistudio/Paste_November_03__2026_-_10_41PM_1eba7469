@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrbitQu - Silsilah Keluarga 7 Generasi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        trah1: '#EF4444', // Merah - Trah Ayah User
+                        trah2: '#3B82F6', // Biru - Trah Ibu User
+                        trah3: '#10B981', // Hijau - Trah Ayah Pasangan
+                        trah4: '#F59E0B', // Kuning - Trah Ibu Pasangan
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+        /* Custom scrollbar for drawer/modals */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        /* Canvas glowing effects */
+        .glow-node {
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        .canvas-bg-cosmic {
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+        }
+        .canvas-bg-organic {
+            background: radial-gradient(circle at center, #1c1917 0%, #0c0a09 100%);
+        }
+        .canvas-bg-atom {
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+        .canvas-bg-neural {
+            background: radial-gradient(circle at center, #18181b 0%, #09090b 100%);
+        }
+        /* Light mode canvas background overrides */
+        html:not(.dark) .canvas-bg-cosmic { background: radial-gradient(circle at center, #f8fafc 0%, #e2e8f0 100%); }
+        html:not(.dark) .canvas-bg-organic { background: radial-gradient(circle at center, #fef3c7 0%, #fde68a 100%); }
+        html:not(.dark) .canvas-bg-atom { background: radial-gradient(circle at center, #f0f9ff 0%, #e0f2fe 100%); }
+        html:not(.dark) .canvas-bg-neural { background: radial-gradient(circle at center, #fafafa 0%, #f4f4f5 100%); }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 h-screen w-screen relative select-none">
+
+    <!-- Top Navigation Header -->
+    <header class="absolute top-0 left-0 right-0 z-20 flex flex-wrap items-center justify-between p-3 md:p-4 bg-gray-900/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-800">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-amber-500/20">
+                OQ
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight tracking-wide flex items-center gap-2">
+                    OrbitQu <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">LeluhurQu</span>
+                </h1>
+                <p class="text-xs text-gray-400 hidden sm:block">Silsilah 7 Generasi Ellips Konsentris • Anti Cross-Lines</p>
+            </div>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <!-- Theme Presets Dropdown -->
+            <div class="relative">
+                <select id="themeSelect" onchange="changeTheme(this.value)" class="bg-gray-800 text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="cosmic">🪐 Tata Surya Cosmic</option>
+                    <option value="organic">🌿 Akar Organik</option>
+                    <option value="atom">⚛️ Struktur Atom</option>
+                    <option value="neural">🧠 Urat Syaraf Glow</option>
+                </select>
+            </div>
+
+            <!-- Trah View Filter -->
+            <div class="relative">
+                <select id="trahFilterSelect" onchange="filterTrah(this.value)" class="bg-gray-800 text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="ALL">🌐 Semua 4 Trah (Ekosistem Full)</option>
+                    <option value="TRAH1">🔴 Trah Ayah User</option>
+                    <option value="TRAH2">🔵 Trah Ibu User</option>
+                    <option value="TRAH3">🟢 Trah Ayah Pasangan</option>
+                    <option value="TRAH4">🟡 Trah Ibu Pasangan</option>
+                </select>
+            </div>
+
+            <!-- Show/Hide Orbit Rings Toggle -->
+            <button onclick="toggleOrbitRings()" id="btnToggleOrbit" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-xs flex items-center gap-1" title="Toggle Garis Orbit">
+                <i data-lucide="disc" class="w-4 h-4"></i>
+                <span class="hidden md:inline">Orbit</span>
+            </button>
+
+            <!-- Dark/Light Mode Toggle -->
+            <button onclick="toggleDarkMode()" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-amber-400 text-xs" title="Toggle Tema Terang/Gelap">
+                <i data-lucide="sun" id="themeIcon" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Open Batch Input Drawer -->
+            <button onclick="openBatchDrawer()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-gray-950 font-bold text-xs px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 transition-all">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Input Batch Koma</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Canvas Container -->
+    <main id="canvasContainer" class="w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden canvas-bg-cosmic">
+        <canvas id="orbitCanvas" class="w-full h-full block"></canvas>
+        
+        <!-- Legend Overlay (Bottom Left) -->
+        <div class="absolute bottom-4 left-4 z-10 bg-gray-900/90 dark:bg-gray-950/90 backdrop-blur-md p-3 rounded-xl border border-gray-800 text-xs space-y-1.5 shadow-xl max-w-xs hidden sm:block">
+            <div class="font-semibold text-gray-300 mb-1 flex items-center justify-between">
+                <span>Legend Trah & Generasi</span>
+                <span class="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">7 Level</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-trah1"></span> Trah Ayah User</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-trah2"></span> Trah Ibu User</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-trah3"></span> Trah Ayah Pasangan</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-trah4"></span> Trah Ibu Pasangan</div>
+            </div>
+            <div class="pt-1.5 border-t border-gray-800 text-[10px] text-gray-400">
+                💡 <span class="text-amber-300 font-medium">Uyut/Kakek/Paman:</span> Card Foto Besar • <span class="text-sky-300 font-medium">Cucu/Cicit:</span> Single Avatar Compact
+            </div>
+        </div>
+
+        <!-- Zoom Controls (Bottom Right) -->
+        <div class="absolute bottom-4 right-4 z-10 flex flex-col gap-1.5">
+            <button onclick="zoomCanvas(1.15)" class="w-9 h-9 rounded-lg bg-gray-900/90 hover:bg-gray-800 border border-gray-800 flex items-center justify-center text-gray-200 shadow-lg">
+                <i data-lucide="zoom-in" class="w-4 h-4"></i>
+            </button>
+            <button onclick="zoomCanvas(0.85)" class="w-9 h-9 rounded-lg bg-gray-900/90 hover:bg-gray-800 border border-gray-800 flex items-center justify-center text-gray-200 shadow-lg">
+                <i data-lucide="zoom-out" class="w-4 h-4"></i>
+            </button>
+            <button onclick="resetZoom()" class="w-9 h-9 rounded-lg bg-gray-900/90 hover:bg-gray-800 border border-gray-800 flex items-center justify-center text-amber-400 shadow-lg" title="Reset Pandangan">
+                <i data-lucide="crosshair" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Drawer 1: Chained Batch Input (Format Koma) -->
+    <div id="batchDrawer" class="fixed inset-y-0 right-0 z-30 w-full max-w-md bg-gray-900 border-l border-gray-800 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between bg-gray-950">
+            <div class="flex items-center gap-2">
+                <i data-lucide="git-fork" class="w-5 h-5 text-amber-400"></i>
+                <h2 class="font-bold text-gray-100">Batch Input Koma Berantai</h2>
+            </div>
+            <button onclick="closeBatchDrawer()" class="text-gray-400 hover:text-white p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="p-4 flex-1 overflow-y-auto space-y-4 text-xs">
+            <!-- Instructions Notice -->
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 leading-relaxed">
+                <p class="font-semibold mb-1 flex items-center gap-1">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Format Input Cepat:
+                </p>
+                Gunakan tanda koma (<code>,</code>) untuk memasukkan banyak nama sekaligus secara berantai:
+                <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-amber-300">
+                    <li>Pilih Orang Tua/Atasan target</li>
+                    <li>Ketik daftar anak/keturunan: <code>Ahmad, Budi, Siti, Dewi</code></li>
+                    <li>Sistem otomatis membuat node di ring generasi berikutnya!</li>
+                </ul>
+            </div>
+
+            <!-- Form Step 1: Select Parent -->
+            <div class="space-y-1.5">
+                <label class="block font-semibold text-gray-300">1. Pilih Orang Tua / Induk Node:</label>
+                <select id="batchParentSelect" onchange="updateBatchParentInfo()" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-200 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <!-- Populated dynamically -->
+                </select>
+                <p id="parentLevelBadge" class="text-[11px] text-gray-400">Target Generasi Anak: <span class="text-amber-400 font-medium">-</span></p>
+            </div>
+
+            <!-- Form Step 2: Trah Selector (If root/Uyut) -->
+            <div class="space-y-1.5">
+                <label class="block font-semibold text-gray-300">2. Pilih Kuadran Trah:</label>
+                <select id="batchTrahSelect" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-200 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="TRAH1">🔴 Trah Ayah User (Kuadran I)</option>
+                    <option value="TRAH2">🔵 Trah Ibu User (Kuadran II)</option>
+                    <option value="TRAH3">🟢 Trah Ayah Pasangan (Kuadran III)</option>
+                    <option value="TRAH4">🟡 Trah Ibu Pasangan (Kuadran IV)</option>
+                </select>
+            </div>
+
+            <!-- Form Step 3: Comma-Separated Names Input -->
+            <div class="space-y-1.5">
+                <label class="block font-semibold text-gray-300">3. Daftar Keturunan (Pisahkan Koma):</label>
+                <textarea id="batchNamesInput" rows="4" placeholder="Contoh: Sanusi, Baharuddin, Maryam, Nurhayati" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="submitBatchInput()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-gray-950 font-bold py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Simpan Keturunan Berantai</span>
+            </button>
+
+            <!-- Data Management Section -->
+            <div class="pt-4 border-t border-gray-800 space-y-2">
+                <h3 class="font-semibold text-gray-400 text-xs">Manajemen Database LocalStorage:</h3>
+                <div class="flex gap-2">
+                    <button onclick="exportJSONData()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-lg border border-gray-700 flex items-center justify-center gap-1">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Export JSON
+                    </button>
+                    <button onclick="triggerImportJSON()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-lg border border-gray-700 flex items-center justify-center gap-1">
+                        <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import JSON
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importJSONData(event)" />
+                </div>
+                <button onclick="resetAllData()" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 p-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Reset Semua Data (Clean Slate)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Node Details & Claim / Edit Form -->
+    <div id="nodeModal" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeNodeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+                <div id="modalAvatarBg" class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-amber-400 text-lg font-bold">
+                    <span id="modalInitials">N</span>
+                </div>
+                <div>
+                    <h3 id="modalNodeName" class="font-bold text-gray-100 text-base">Nama Anggota</h3>
+                    <p id="modalNodeLevel" class="text-xs text-amber-400 font-medium">Generasi: -</p>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium text-gray-400 mb-1">Nama Lengkap / Panggilan:</label>
+                    <input type="text" id="editNodeName" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-gray-400 mb-1">Gelar Sapaan / Peran (Paman, Bibi, Uwa, Pasangan):</label>
+                    <input type="text" id="editNodeTitle" placeholder="Contoh: Uwa Haji / Paman Bungsu" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-gray-400 mb-1">URL Foto Profil Avatar (Opsional):</label>
+                    <input type="text" id="editNodePhoto" placeholder="https://..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-100 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <!-- Claim Status Box -->
+                <div id="claimStatusBox" class="p-2.5 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-300">Status Klaim Profil:</p>
+                        <p id="claimStatusText" class="text-[11px] text-gray-400">Belum Diklaim oleh Pemilik</p>
+                    </div>
+                    <button id="btnClaimToggle" onclick="toggleClaimNode()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold text-xs shadow-sm">
+                        Klaim Saya!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2 pt-2">
+                <button onclick="saveNodeDetails()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-2 rounded-xl text-xs shadow-md">
+                    Simpan Perubahan
+                </button>
+                <button onclick="deleteCurrentNode()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 px-3 py-2 rounded-xl text-xs font-semibold">
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        /**
+         * OrbitQu Core State & Architecture Definition
+         * 7 Concentric Generations (Inside out):
+         * Level 0: Uyut (Ancestors - Center Outer Core)
+         * Level 1: Kakek / Nenek
+         * Level 2: Ayah / Ibu / Paman / Bibi / Uwa (High visibility)
+         * Level 3: User / Pasangan & Saudara / Sepupu Utama (Poros Tengah)
+         * Level 4: Anak
+         * Level 5: Cucu (Compact single-avatar)
+         * Level 6: Cicit (Compact single-avatar terluar)
+         */
+
+        const GENERATION_NAMES = [
+            "Level 0: Uyut (Leluhur Core)",
+            "Level 1: Kakek / Nenek",
+            "Level 2: Ayah / Ibu / Paman / Bibi / Uwa",
+            "Level 3: User / Pasangan & Saudara (Poros Utama)",
+            "Level 4: Anak",
+            "Level 5: Cucu (Compact Gen Z)",
+            "Level 6: Cicit (Compact Gen Alpha)"
+        ];
+
+        // Global State variables
+        let familyNodes = [];
+        let selectedNodeId = null;
+        let activeTheme = 'cosmic';
+        let activeTrahFilter = 'ALL';
+        let showOrbitRings = true;
+        let isDarkMode = true;
+
+        // Canvas & Transformation state
+        let canvas, ctx;
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Predefined initial root nodes if fresh storage (Clean slate setup)
+        const DEFAULT_NODES = [
+            { id: 'root_user', name: 'User Utama', title: 'Poros Inti', level: 3, trah: 'TRAH1', parentId: null, photo: '', claimed: true }
+        ];
+
+        // Init App on Window Load
+        window.onload = function() {
+            lucide.createIcons();
+            canvas = document.getElementById('orbitCanvas');
+            ctx = canvas.getContext('2d');
+
+            loadDataFromStorage();
+            resizeCanvas();
+            resetZoom();
+
+            // Event Listeners for Canvas Interactivity
+            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            canvas.addEventListener('click', handleCanvasClick);
+
+            // Touch events for mobile responsiveness
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd);
+
+            renderCanvas();
+        };
+
+        // --- DATA MANAGEMENT & LOCALSTORAGE ---
+
+        function loadDataFromStorage() {
+            const saved = localStorage.getItem('orbitqu_family_data');
+            if (saved) {
+                try {
+                    familyNodes = JSON.parse(saved);
+                } catch (e) {
+                    familyNodes = [...DEFAULT_NODES];
+                }
+            } else {
+                familyNodes = [...DEFAULT_NODES];
+                saveDataToStorage();
+            }
+        }
+
+        function saveDataToStorage() {
+            localStorage.setItem('orbitqu_family_data', JSON.stringify(familyNodes));
+            renderCanvas();
+            updateBatchParentDropdown();
+        }
+
+        function resetAllData() {
+            if (confirm("Apakah Anda yakin ingin menghapus seluruh data silsilah dan kembali ke lembar bersih (Clean Start)?")) {
+                familyNodes = [...DEFAULT_NODES];
+                saveDataToStorage();
+                closeBatchDrawer();
+            }
+        }
+
+        function exportJSONData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(familyNodes, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `OrbitQu_Silsilah_Backup.json`);
+            dlAnchorElem.click();
+        }
+
+        function triggerImportJSON() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function importJSONData(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        familyNodes = imported;
+                        saveDataToStorage();
+                        alert("Data silsilah berhasil di-import!");
+                    }
+                } catch (err) {
+                    alert("Format JSON tidak valid!");
+                }
+            };
+            fileReader.readAsText(event.target.files[0]);
+        }
+
+        // --- CHAINED BATCH INPUT LOGIC (FORMAT KOMA) ---
+
+        function openBatchDrawer() {
+            updateBatchParentDropdown();
+            document.getElementById('batchDrawer').classList.remove('translate-x-full');
+        }
+
+        function closeBatchDrawer() {
+            document.getElementById('batchDrawer').classList.add('translate-x-full');
+        }
+
+        function updateBatchParentDropdown() {
+            const select = document.getElementById('batchParentSelect');
+            select.innerHTML = '';
+
+            // Add Root option for new Uyut
+            const rootOpt = document.createElement('option');
+            rootOpt.value = 'ROOT';
+            rootOpt.textContent = '📍 Tambah Uyut Baru (Level 0 Leluhur Core)';
+            select.appendChild(rootOpt);
+
+            familyNodes.forEach(node => {
+                const opt = document.createElement('option');
+                opt.value = node.id;
+                opt.textContent = `[L${node.level}] ${node.name} (${node.title || 'Anggota'})`;
+                select.appendChild(opt);
+            });
+
+            updateBatchParentInfo();
+        }
+
+        function updateBatchParentInfo() {
+            const parentId = document.getElementById('batchParentSelect').value;
+            const badge = document.getElementById('parentLevelBadge');
+            const trahSelect = document.getElementById('batchTrahSelect');
+
+            if (parentId === 'ROOT') {
+                badge.innerHTML = `Target Generasi Anak: <span class="text-amber-400 font-medium">Level 0 (Uyut)</span>`;
+                trahSelect.disabled = false;
+            } else {
+                const parent = familyNodes.find(n => n.id === parentId);
+                if (parent) {
+                    const nextLevel = Math.min(6, parent.level + 1);
+                    badge.innerHTML = `Target Generasi Anak: <span class="text-amber-400 font-medium">${GENERATION_NAMES[nextLevel]}</span>`;
+                    trahSelect.value = parent.trah || 'TRAH1';
+                    trahSelect.disabled = true; // Auto inherit parent trah
+                }
+            }
+        }
+
+        function submitBatchInput() {
+            const parentId = document.getElementById('batchParentSelect').value;
+            const namesText = document.getElementById('batchNamesInput').value.trim();
+            const chosenTrah = document.getElementById('batchTrahSelect').value;
+
+            if (!namesText) {
+                alert("Silakan masukkan minimal satu nama dengan format koma!");
+                return;
+            }
+
+            // Split comma-separated names
+            const names = namesText.split(',').map(n => n.trim()).filter(n => n.length > 0);
+            
+            let targetLevel = 0;
+            let parentTrah = chosenTrah;
+
+            if (parentId !== 'ROOT') {
+                const parent = familyNodes.find(n => n.id === parentId);
+                if (parent) {
+                    targetLevel = Math.min(6, parent.level + 1);
+                    parentTrah = parent.trah;
+                }
+            }
+
+            // Create nodes sequentially
+            names.forEach(name => {
+                const newNode = {
+                    id: 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    name: name,
+                    title: targetLevel <= 2 ? 'Prioritas Dikenal' : (targetLevel >= 5 ? 'Single' : 'Anggota'),
+                    level: targetLevel,
+                    trah: parentTrah,
+                    parentId: parentId === 'ROOT' ? null : parentId,
+                    photo: '',
+                    claimed: false
+                };
+                familyNodes.push(newNode);
+            });
+
+            saveDataToStorage();
+            document.getElementById('batchNamesInput').value = '';
+            alert(`Berhasil menambahkan ${names.length} anggota keluarga! Canvas diperbarui.`);
+        }
+
+        // --- NODE CLAIM & EDIT MODAL ---
+
+        function openNodeModal(nodeId) {
+            const node = familyNodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            selectedNodeId = nodeId;
+            document.getElementById('modalNodeName').textContent = node.name;
+            document.getElementById('modalNodeLevel').textContent = GENERATION_NAMES[node.level];
+            document.getElementById('editNodeName').value = node.name;
+            document.getElementById('editNodeTitle').value = node.title || '';
+            document.getElementById('editNodePhoto').value = node.photo || '';
+            document.getElementById('modalInitials').textContent = node.name.charAt(0).toUpperCase();
+
+            // Set Trah Avatar Color
+            const avatarBg = document.getElementById('modalAvatarBg');
+            avatarBg.className = `w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md ${getTrahBgClass(node.trah)}`;
+
+            // Claim Status UI
+            const claimText = document.getElementById('claimStatusText');
+            const claimBtn = document.getElementById('btnClaimToggle');
+            if (node.claimed) {
+                claimText.textContent = "✅ Telah Diklaim oleh Pemilik Profile";
+                claimText.className = "text-[11px] text-emerald-400 font-medium";
+                claimBtn.textContent = "Batal Klaim";
+                claimBtn.className = "px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold text-xs";
+            } else {
+                claimText.textContent = "⚠️ Belum Diklaim";
+                claimText.className = "text-[11px] text-amber-400";
+                claimBtn.textContent = "Klaim Saya!";
+                claimBtn.className = "px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold text-xs shadow-sm";
+            }
+
+            document.getElementById('nodeModal').classList.remove('hidden');
+        }
+
+        function closeNodeModal() {
+            document.getElementById('nodeModal').classList.add('hidden');
+            selectedNodeId = null;
+        }
+
+        function saveNodeDetails() {
+            if (!selectedNodeId) return;
+            const node = familyNodes.find(n => n.id === selectedNodeId);
+            if (node) {
+                node.name = document.getElementById('editNodeName').value.trim() || node.name;
+                node.title = document.getElementById('editNodeTitle').value.trim();
+                node.photo = document.getElementById('editNodePhoto').value.trim();
+                saveDataToStorage();
+                closeNodeModal();
+            }
+        }
+
+        function toggleClaimNode() {
+            if (!selectedNodeId) return;
+            const node = familyNodes.find(n => n.id === selectedNodeId);
+            if (node) {
+                node.claimed = !node.claimed;
+                saveDataToStorage();
+                openNodeModal(selectedNodeId); // Refresh modal state
+            }
+        }
+
+        function deleteCurrentNode() {
+            if (!selectedNodeId) return;
+            if (confirm("Apakah Anda yakin ingin menghapus node ini beserta referensinya?")) {
+                familyNodes = familyNodes.filter(n => n.id !== selectedNodeId && n.parentId !== selectedNodeId);
+                saveDataToStorage();
+                closeNodeModal();
+            }
+        }
+
+        // --- CANVAS RENDER ENGINE (ELLIPTICAL CONCENTRIC ORBITS) ---
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            renderCanvas();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            panX = canvas.width / 2;
+            panY = canvas.height / 2;
+            renderCanvas();
+        }
+
+        function zoomCanvas(factor) {
+            scale *= factor;
+            scale = Math.max(0.3, Math.min(3.0, scale));
+            renderCanvas();
+        }
+
+        function renderCanvas() {
+            if (!ctx) return;
+
+            // Clear Background
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+
+            ctx.save();
+            // Apply Zoom & Pan
+            ctx.translate(panX, panY);
+            ctx.scale(scale, scale);
+
+            // Compute Elliptical Node Positions
+            const calculatedNodes = computeEllipticalLayout(familyNodes);
+
+            // 1. Draw Orbit Ellipse Rings
+            if (showOrbitRings) {
+                drawOrbitRings();
+            }
+
+            // 2. Draw Connector Lines (Sub-sector Anti Cross-Lines)
+            drawConnectors(calculatedNodes);
+
+            // 3. Draw Nodes (Cards for Ancestors/Parents, Compact Bubbles for Cucu/Cicit)
+            drawNodes(calculatedNodes);
+
+            ctx.restore();
+        }
+
+        /**
+         * Computes horizontal ellipse positions (Rx > Ry) with angular sector spreading
+         */
+        function computeEllipticalLayout(nodes) {
+            // Filter nodes by active Trah selection
+            const filteredNodes = activeTrahFilter === 'ALL' ? nodes : nodes.filter(n => n.trah === activeTrahFilter || n.level === 3);
+
+            // Base radii for 7 levels (Level 0 to 6)
+            // Rx is larger than Ry to create oval space preventing overlap
+            const levelRadii = [
+                { rx: 520, ry: 380 }, // Level 0: Uyut Outer
+                { rx: 430, ry: 310 }, // Level 1: Kakek
+                { rx: 340, ry: 240 }, // Level 2: Ayah/Paman/Bibi/Uwa
+                { rx: 250, ry: 170 }, // Level 3: User/Saudara (Poros)
+                { rx: 170, ry: 110 }, // Level 4: Anak
+                { rx: 110, ry: 75 },  // Level 5: Cucu
+                { rx: 55,  ry: 38 }   // Level 6: Cicit Inner Core
+            ];
+
+            // Trah quadrant angles (In Radians)
+            const trahAngles = {
+                'TRAH1': { start: -Math.PI, end: -Math.PI / 2 },    // Top-Left: Ayah User
+                'TRAH2': { start: -Math.PI / 2, end: 0 },             // Top-Right: Ibu User
+                'TRAH3': { start: Math.PI / 2, end: Math.PI },        // Bottom-Left: Ayah Pasangan
+                'TRAH4': { start: 0, end: Math.PI / 2 }               // Bottom-Right: Ibu Pasangan
+            };
+
+            const computed = [];
+
+            // Group nodes by Level & Trah
+            for (let lvl = 0; lvl <= 6; lvl++) {
+                const lvlNodes = filteredNodes.filter(n => n.level === lvl);
+                
+                ['TRAH1', 'TRAH2', 'TRAH3', 'TRAH4'].forEach(trahKey => {
+                    const trahLvlNodes = lvlNodes.filter(n => n.trah === trahKey);
+                    const sector = trahAngles[trahKey];
+
+                    if (trahLvlNodes.length > 0) {
+                        const angleStep = (sector.end - sector.start) / (trahLvlNodes.length + 1);
+                        
+                        trahLvlNodes.forEach((node, index) => {
+                            const angle = sector.start + angleStep * (index + 1);
+                            const radii = levelRadii[node.level];
+                            
+                            // Ellipse parametric coordinates: x = Rx * cos(theta), y = Ry * sin(theta)
+                            const x = radii.rx * Math.cos(angle);
+                            const y = radii.ry * Math.sin(angle);
+
+                            computed.push({
+                                ...node,
+                                x: x,
+                                y: y,
+                                angle: angle,
+                                color: getTrahColorHex(node.trah)
+                            });
+                        });
+                    }
+                });
+            }
+
+            return computed;
+        }
+
+        function drawOrbitRings() {
+            const levelRadii = [
+                { rx: 520, ry: 380 },
+                { rx: 430, ry: 310 },
+                { rx: 340, ry: 240 },
+                { rx: 250, ry: 170 },
+                { rx: 170, ry: 110 },
+                { rx: 110, ry: 75 },
+                { rx: 55,  ry: 38 }
+            ];
+
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 6]);
+
+            levelRadii.forEach((r, idx) => {
+                ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)';
+                if (idx === 3) ctx.strokeStyle = isDarkMode ? 'rgba(245, 158, 11, 0.25)' : 'rgba(217, 119, 6, 0.3)'; // Highlight Poros
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, r.rx, r.ry, 0, 0, 2 * Math.PI);
+                ctx.stroke();
+            });
+
+            ctx.setLineDash([]); // Reset line dash
+        }
+
+        function drawConnectors(nodes) {
+            ctx.lineWidth = 1.5;
+
+            nodes.forEach(node => {
+                if (node.parentId) {
+                    const parent = nodes.find(n => n.id === node.parentId);
+                    if (parent) {
+                        ctx.strokeStyle = getThemeConnectorColor(node.color);
+
+                        ctx.beginPath();
+                        ctx.moveTo(parent.x, parent.y);
+                        // Quadratic bezier curve towards center/orbit for fluid organic look
+                        const controlX = (parent.x + node.x) / 2;
+                        const controlY = (parent.y + node.y) / 2;
+                        ctx.quadraticCurveTo(controlX, controlY, node.x, node.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+        }
+
+        function drawNodes(nodes) {
+            nodes.forEach(node => {
+                ctx.save();
+                ctx.translate(node.x, node.y);
+
+                // Check node visual style based on generation level:
+                // Level 0, 1, 2 (Uyut, Kakek, Paman/Bibi): Large Photo Card (Prioritas Dikenal)
+                // Level 3, 4: Medium Badge Node
+                // Level 5, 6 (Cucu, Cicit): Compact Single Avatar Bubble (Single/Gen Z/Alpha)
+                
+                if (node.level <= 2) {
+                    drawLargePhotoCard(node);
+                } else if (node.level >= 5) {
+                    drawCompactBubbleNode(node);
+                } else {
+                    drawMediumBadgeNode(node);
+                }
+
+                ctx.restore();
+            });
+        }
+
+        // --- CUSTOM NODE STYLES ---
+
+        // 1. Large High-Visibility Photo Card (For Uyut, Kakek, Paman/Bibi/Uwa)
+        function drawLargePhotoCard(node) {
+            const width = 110;
+            const height = 44;
+            const rx = -width / 2;
+            const ry = -height / 2;
+
+            // Card Shadow & Background
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = isDarkMode ? '#1f2937' : '#ffffff';
+            ctx.strokeStyle = node.color;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.roundRect(rx, ry, width, height, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Reset Shadow
+            ctx.shadowBlur = 0;
+
+            // Avatar Circle
+            const avatarX = rx + 20;
+            const avatarY = 0;
+            const avatarRadius = 14;
+
+            ctx.fillStyle = node.color;
+            ctx.beginPath();
+            ctx.arc(avatarX, avatarY, avatarRadius, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Avatar Initials Text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px "Plus Jakarta Sans"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.name.charAt(0).toUpperCase(), avatarX, avatarY);
+
+            // Name & Title Label Text
+            ctx.textAlign = 'left';
+            ctx.fillStyle = isDarkMode ? '#f3f4f6' : '#111827';
+            ctx.font = 'bold 10px "Plus Jakarta Sans"';
+            const truncatedName = node.name.length > 10 ? node.name.substring(0, 9) + '..' : node.name;
+            ctx.fillText(truncatedName, rx + 40, ry + 16);
+
+            ctx.fillStyle = isDarkMode ? '#9ca3af' : '#6b7280';
+            ctx.font = '9px "Plus Jakarta Sans"';
+            const titleText = node.title || (node.level === 0 ? 'Uyut' : 'Kakek');
+            ctx.fillText(titleText, rx + 40, ry + 30);
+
+            // Claimed Indicator Badge
+            if (node.claimed) {
+                ctx.fillStyle = '#10B981';
+                ctx.beginPath();
+                ctx.arc(rx + width - 8, ry + 8, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // 2. Medium Badge Node (For User, Pasangan, Saudara, Anak)
+        function drawMediumBadgeNode(node) {
+            const radius = 18;
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = isDarkMode ? '#111827' : '#ffffff';
+            ctx.strokeStyle = node.color;
+            ctx.lineWidth = 2.5;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+
+            // Initials
+            ctx.fillStyle = isDarkMode ? '#f9fafb' : '#111827';
+            ctx.font = 'bold 11px "Plus Jakarta Sans"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.name.charAt(0).toUpperCase(), 0, 0);
+
+            // Name Pill Label below
+            ctx.fillStyle = isDarkMode ? 'rgba(17, 24, 39, 0.85)' : 'rgba(255, 255, 255, 0.9)';
+            ctx.strokeStyle = node.color;
+            ctx.lineWidth = 1;
+
+            const textWidth = ctx.measureText(node.name).width + 10;
+            ctx.beginPath();
+            ctx.roundRect(-textWidth / 2, radius + 4, textWidth, 14, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isDarkMode ? '#e5e7eb' : '#1f2937';
+            ctx.font = '9px "Plus Jakarta Sans"';
+            ctx.fillText(node.name, 0, radius + 11);
+        }
+
+        // 3. Compact Single Avatar Bubble Node (For Cucu & Cicit Gen Z/Alpha)
+        function drawCompactBubbleNode(node) {
+            const radius = 10;
+
+            ctx.fillStyle = node.color;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Inner white dot
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Minimalist Label
+            ctx.fillStyle = isDarkMode ? '#d1d5db' : '#374151';
+            ctx.font = '8px "Plus Jakarta Sans"';
+            ctx.textAlign = 'center';
+            ctx.fillText(node.name, 0, radius + 10);
+        }
+
+        // --- INTERACTIVITY (PAN, ZOOM, CLICK DETECT) ---
+
+        function handleMouseDown(e) {
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        }
+
+        function handleMouseMove(e) {
+            if (isDragging) {
+                panX = e.clientX - startX;
+                panY = e.clientY - startY;
+                renderCanvas();
+            }
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+            zoomCanvas(zoomFactor);
+        }
+
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - panX) / scale;
+            const mouseY = (e.clientY - rect.top - panY) / scale;
+
+            const calculatedNodes = computeEllipticalLayout(familyNodes);
+
+            // Find clicked node within bounding radius
+            for (let i = calculatedNodes.length - 1; i >= 0; i--) {
+                const node = calculatedNodes[i];
+                const clickRadius = node.level <= 2 ? 45 : 20;
+                const dist = Math.hypot(mouseX - node.x, mouseY - node.y);
+
+                if (dist <= clickRadius) {
+                    openNodeModal(node.id);
+                    break;
+                }
+            }
+        }
+
+        // Touch event handlers for mobile devices
+        let touchStartDist = 0;
+
+        function handleTouchStart(e) {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - panX;
+                startY = e.touches[0].clientY - panY;
+            } else if (e.touches.length === 2) {
+                touchStartDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (isDragging && e.touches.length === 1) {
+                panX = e.touches[0].clientX - startX;
+                panY = e.touches[0].clientY - startY;
+                renderCanvas();
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const zoomFactor = dist / touchStartDist;
+                zoomCanvas(zoomFactor > 1 ? 1.03 : 0.97);
+                touchStartDist = dist;
+            }
+        }
+
+        function handleTouchEnd() {
+            isDragging = false;
+        }
+
+        // --- THEME & UTILITIES ---
+
+        function changeTheme(themeName) {
+            activeTheme = themeName;
+            const container = document.getElementById('canvasContainer');
+            container.className = `w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden canvas-bg-${themeName}`;
+            renderCanvas();
+        }
+
+        function filterTrah(trahKey) {
+            activeTrahFilter = trahKey;
+            renderCanvas();
+        }
+
+        function toggleOrbitRings() {
+            showOrbitRings = !showOrbitRings;
+            renderCanvas();
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            const icon = document.getElementById('themeIcon');
+            icon.setAttribute('data-lucide', isDarkMode ? 'sun' : 'moon');
+            lucide.createIcons();
+            renderCanvas();
+        }
+
+        function getTrahColorHex(trah) {
+            switch(trah) {
+                case 'TRAH1': return '#EF4444'; // Red
+                case 'TRAH2': return '#3B82F6'; // Blue
+                case 'TRAH3': return '#10B981'; // Green
+                case 'TRAH4': return '#F59E0B'; // Amber
+                default: return '#6B7280';
+            }
+        }
+
+        function getTrahBgClass(trah) {
+            switch(trah) {
+                case 'TRAH1': return 'bg-red-500';
+                case 'TRAH2': return 'bg-blue-500';
+                case 'TRAH3': return 'bg-emerald-500';
+                case 'TRAH4': return 'bg-amber-500';
+                default: return 'bg-gray-500';
+            }
+        }
+
+        function getThemeConnectorColor(baseHex) {
+            if (activeTheme === 'neural') return baseHex; // Glow line
+            if (activeTheme === 'organic') return '#d97706'; // Warm amber root line
+            if (activeTheme === 'atom') return isDarkMode ? '#38bdf8' : '#0284c7'; // Electric blue line
+            return isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.2)'; // Cosmic default
+        }
+    </script>
+</body>
+</html>
