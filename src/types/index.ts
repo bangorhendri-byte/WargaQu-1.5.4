@@ -170,7 +170,25 @@ export interface FamilyNode {
   passedYear?: string;
   isDeceased?: boolean;
   bio?: string;
+  manualX?: number;
+  manualY?: number;
+  customColor?: string;
 }
+
+export type CanvasPaperSize = 'FIT' | 'A0' | 'A1' | 'A2' | 'A3' | 'A4';
+export type FrameScaleSize = 'A4' | 'A5' | 'A6' | 'A7';
+export type LayoutMode = 'organic_flow' | 'auto_orbit' | 'auto_tree' | 'manual';
+
+export interface GenerationColors {
+  level0: string; // Uyut (Leluhur Core)
+  level1: string; // Kakek / Nenek
+  level2: string; // Ayah / Ibu / Paman
+  level3: string; // User & Pasangan (Poros)
+  level4: string; // Anak
+  level5: string; // Cucu
+  level6: string; // Cicit
+}
+
 
 export interface FamilyPostComment {
   id: string;
