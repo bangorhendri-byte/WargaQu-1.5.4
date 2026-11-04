@@ -1175,15 +1175,18 @@ export const LeluhurQuView: React.FC<LeluhurQuViewProps> = ({
     frameScale: number,
     isDark: boolean
   ) => {
-    // Branch widths tapering upward: Level 0 (Roots) thickest -> Level 6 thinnest
+    // Branch widths tapering upward per specification:
+    // 1. Batang & Garis Utama di Bawah (Level Uyut/Akar): 12px - 20px (kokoh menopang seluruh pohon)
+    // 2. Cabang Menengah (Level Kakek/Nenek & Ayah/Ibu): 6px - 9px (meruncing bertahap)
+    // 3. Ujung Ranting (Menuju Kotak Foto/Buah - Level 4-6): 2px - 4px (luwes & ramping)
     const branchWidthByLevel = [
-      32 * frameScale, // Level 0 (Uyut)
-      24 * frameScale, // Level 1 (Kakek)
-      18 * frameScale, // Level 2 (Ayah)
-      13 * frameScale, // Level 3 (User)
-      9 * frameScale,  // Level 4 (Anak)
-      6 * frameScale,  // Level 5 (Cucu)
-      3.5 * frameScale // Level 6 (Cicit)
+      18 * frameScale,  // Level 0 (Uyut / Akar Utama: 12px - 20px)
+      8.8 * frameScale, // Level 1 (Kakek / Nenek: 6px - 9px)
+      6.8 * frameScale, // Level 2 (Ayah / Ibu: 6px - 9px)
+      4.8 * frameScale, // Level 3 (User & Pasangan: transisi 4px - 5px)
+      3.6 * frameScale, // Level 4 (Anak / Ranting Buah: 2px - 4px)
+      2.8 * frameScale, // Level 5 (Cucu: 2px - 3px)
+      2.0 * frameScale  // Level 6 (Cicit: 2px)
     ];
 
     nodes.forEach(node => {
@@ -1195,8 +1198,8 @@ export const LeluhurQuView: React.FC<LeluhurQuViewProps> = ({
       const p1 = { x: parent.x, y: parent.y };
       const p2 = { x: node.x, y: node.y };
 
-      const w1 = branchWidthByLevel[parent.level] || (14 * frameScale);
-      const w2 = branchWidthByLevel[node.level] || (6 * frameScale);
+      const w1 = branchWidthByLevel[parent.level] ?? (16 * frameScale);
+      const w2 = branchWidthByLevel[node.level] ?? (3.6 * frameScale);
 
       const dy = p2.y - p1.y;
       const dx = p2.x - p1.x;
@@ -1245,14 +1248,20 @@ export const LeluhurQuView: React.FC<LeluhurQuViewProps> = ({
       ctx.fill();
       ctx.restore();
 
-      // 2. Parallel Double Tracks (Garis Pembungkus Ganda)
+      // 2. Parallel Double Tracks (Garis Pembungkus Ganda Berkelok)
+      // Tapered stroke width: 3.0px at root foundation, 2.0px at mid branches, 1.4px at twigs
       const strokeGrad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
       strokeGrad.addColorStop(0, startColor);
       strokeGrad.addColorStop(1, endColor);
 
       ctx.save();
       ctx.strokeStyle = strokeGrad;
-      ctx.lineWidth = Math.max(1.8, 2.2 * frameScale);
+      const trackLineWidth = parent.level === 0
+        ? Math.max(2.4, 3.0 * frameScale)
+        : parent.level <= 2
+        ? Math.max(1.8, 2.2 * frameScale)
+        : Math.max(1.2, 1.5 * frameScale);
+      ctx.lineWidth = trackLineWidth;
       ctx.globalAlpha = isDark ? 0.95 : 0.88;
 
       // Left Track
@@ -1267,53 +1276,57 @@ export const LeluhurQuView: React.FC<LeluhurQuViewProps> = ({
       ctx.bezierCurveTo(cp1R.x, cp1R.y, cp2R.x, cp2R.y, p2R.x, p2R.y);
       ctx.stroke();
 
-      // Center glowing sap/marrow line
-      ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y);
-      ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.75)';
-      ctx.setLineDash([4, 6]);
-      ctx.stroke();
+      // Center glowing sap/marrow line (inside trunk & mid-branches)
+      if (w1 >= 5 * frameScale) {
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.75)';
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+      }
 
-      // 3. Subtle Vector-Based Wood Grain Paths (Serat Kayu) inside Trunk
-      // Grain 1: Left inner grain line
-      const g1_p1 = { x: p1.x - w1 * 0.22, y: p1.y };
-      const g1_p2 = { x: p2.x - nx * (w2 * 0.22), y: p2.y - ny * (w2 * 0.22) };
-      const g1_cp1 = { x: cp1.x - w1 * 0.18, y: cp1.y };
-      const g1_cp2 = { x: cp2.x - w2 * 0.18, y: cp2.y };
+      // 3. Subtle Vector-Based Wood Grain Paths (Serat Kayu) inside Trunk & Mid-Branches
+      if (w1 >= 6.5 * frameScale) {
+        // Grain 1: Left inner grain line
+        const g1_p1 = { x: p1.x - w1 * 0.22, y: p1.y };
+        const g1_p2 = { x: p2.x - nx * (w2 * 0.22), y: p2.y - ny * (w2 * 0.22) };
+        const g1_cp1 = { x: cp1.x - w1 * 0.18, y: cp1.y };
+        const g1_cp2 = { x: cp2.x - w2 * 0.18, y: cp2.y };
 
-      ctx.beginPath();
-      ctx.moveTo(g1_p1.x, g1_p1.y);
-      ctx.bezierCurveTo(g1_cp1.x, g1_cp1.y, g1_cp2.x, g1_cp2.y, g1_p2.x, g1_p2.y);
-      ctx.strokeStyle = isDark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(120, 53, 15, 0.26)';
-      ctx.lineWidth = 1.1;
-      ctx.setLineDash([10, 4, 18, 5]);
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(g1_p1.x, g1_p1.y);
+        ctx.bezierCurveTo(g1_cp1.x, g1_cp1.y, g1_cp2.x, g1_cp2.y, g1_p2.x, g1_p2.y);
+        ctx.strokeStyle = isDark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(120, 53, 15, 0.26)';
+        ctx.lineWidth = 1.1;
+        ctx.setLineDash([10, 4, 18, 5]);
+        ctx.stroke();
 
-      // Grain 2: Right inner grain line
-      const g3_p1 = { x: p1.x + w1 * 0.22, y: p1.y };
-      const g3_p2 = { x: p2.x + nx * (w2 * 0.22), y: p2.y + ny * (w2 * 0.22) };
-      const g3_cp1 = { x: cp1.x + w1 * 0.18, y: cp1.y };
-      const g3_cp2 = { x: cp2.x + w2 * 0.18, y: cp2.y };
+        // Grain 2: Right inner grain line
+        const g3_p1 = { x: p1.x + w1 * 0.22, y: p1.y };
+        const g3_p2 = { x: p2.x + nx * (w2 * 0.22), y: p2.y + ny * (w2 * 0.22) };
+        const g3_cp1 = { x: cp1.x + w1 * 0.18, y: cp1.y };
+        const g3_cp2 = { x: cp2.x + w2 * 0.18, y: cp2.y };
 
-      ctx.beginPath();
-      ctx.moveTo(g3_p1.x, g3_p1.y);
-      ctx.bezierCurveTo(g3_cp1.x, g3_cp1.y, g3_cp2.x, g3_cp2.y, g3_p2.x, g3_p2.y);
-      ctx.strokeStyle = isDark ? 'rgba(0, 0, 0, 0.30)' : 'rgba(120, 53, 15, 0.20)';
-      ctx.lineWidth = 1.0;
-      ctx.setLineDash([14, 6, 8, 4]);
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(g3_p1.x, g3_p1.y);
+        ctx.bezierCurveTo(g3_cp1.x, g3_cp1.y, g3_cp2.x, g3_cp2.y, g3_p2.x, g3_p2.y);
+        ctx.strokeStyle = isDark ? 'rgba(0, 0, 0, 0.30)' : 'rgba(120, 53, 15, 0.20)';
+        ctx.lineWidth = 1.0;
+        ctx.setLineDash([14, 6, 8, 4]);
+        ctx.stroke();
+      }
 
       ctx.setLineDash([]);
       ctx.restore();
     });
 
-    // Draw Root Tendrils beneath Level 0 (Uyut)
+    // Draw Root Tendrils beneath Level 0 (Uyut) - thick anchor roots (12px-20px foundation zone)
     nodes.filter(n => n.level === 0).forEach(root => {
       ctx.save();
       ctx.strokeStyle = isDark ? 'rgba(217, 119, 6, 0.65)' : 'rgba(180, 83, 9, 0.75)';
-      ctx.lineWidth = 2.5 * frameScale;
+      ctx.lineWidth = Math.max(2.8, 3.6 * frameScale);
       [-25 * frameScale, 0, 25 * frameScale].forEach((offset, idx) => {
         ctx.beginPath();
         ctx.moveTo(root.x + offset, root.y + 24 * frameScale);

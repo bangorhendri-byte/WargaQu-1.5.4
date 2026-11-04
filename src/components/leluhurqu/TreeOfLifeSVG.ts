@@ -82,15 +82,18 @@ export function generateTreeOfLifeSVG(
   const woodGrainColorLight = isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.65)';
   const woodGrainColorDark = isDarkMode ? 'rgba(0, 0, 0, 0.35)' : 'rgba(120, 53, 15, 0.35)';
 
-  // Branch widths tapering upward
+  // Branch widths tapering upward per specification:
+  // 1. Batang & Garis Utama di Bawah (Level Uyut/Akar): 12px - 20px (kokoh menopang seluruh pohon)
+  // 2. Cabang Menengah (Level Kakek/Nenek & Ayah/Ibu): 6px - 9px (meruncing bertahap)
+  // 3. Ujung Ranting (Menuju Kotak Foto/Buah - Level 4-6): 2px - 4px (luwes & ramping)
   const branchWidthByLevel = [
-    32 * frameScale, // Uyut (Thick root base)
-    24 * frameScale, // Kakek / Nenek
-    18 * frameScale, // Ayah / Ibu
-    13 * frameScale, // User / Pasangan
-    9 * frameScale,  // Anak
-    6 * frameScale,  // Cucu
-    3.5 * frameScale // Cicit
+    18 * frameScale,  // Level 0 (Uyut / Akar Utama: 12px - 20px)
+    8.8 * frameScale, // Level 1 (Kakek / Nenek: 6px - 9px)
+    6.8 * frameScale, // Level 2 (Ayah / Ibu: 6px - 9px)
+    4.8 * frameScale, // Level 3 (User & Pasangan: transisi 4px - 5px)
+    3.6 * frameScale, // Level 4 (Anak / Ranting Buah: 2px - 4px)
+    2.8 * frameScale, // Level 5 (Cucu: 2px - 3px)
+    2.0 * frameScale  // Level 6 (Cicit: 2px)
   ];
 
   // 1. Build Defs Section (Gradients, Reusable Leaf Clusters, Fruit Nodes, Filters)
@@ -220,8 +223,8 @@ export function generateTreeOfLifeSVG(
       const p1 = { x: cx + parent.x, y: cy + parent.y };
       const p2 = { x: cx + node.x, y: cy + node.y };
 
-      const w1 = branchWidthByLevel[parent.level] || (14 * frameScale);
-      const w2 = branchWidthByLevel[node.level] || (6 * frameScale);
+      const w1 = branchWidthByLevel[parent.level] ?? (16 * frameScale);
+      const w2 = branchWidthByLevel[node.level] ?? (3.6 * frameScale);
 
       const dy = p2.y - p1.y;
       const dx = p2.x - p1.x;
@@ -262,56 +265,63 @@ export function generateTreeOfLifeSVG(
       );
 
       // Outer Double Tracks (Garis Pembungkus Ganda Berkelok)
-      const trackWidth = Math.max(1.8, 2.2 * frameScale).toFixed(1);
+      // Tapered stroke width: 3.0px at root foundation, 2.0px at mid branches, 1.4px at twigs
+      const trackStrokeWidth = (
+        parent.level === 0 ? Math.max(2.4, 3.0 * frameScale) :
+        parent.level <= 2 ? Math.max(1.8, 2.2 * frameScale) :
+        Math.max(1.2, 1.5 * frameScale)
+      ).toFixed(1);
       const trackOpacity = isDarkMode ? 0.95 : 0.88;
 
       branchesSVG.push(
         `    <!-- Left Track -->\n` +
         `    <path d="M ${p1L.x.toFixed(1)} ${p1L.y.toFixed(1)} C ${cp1L.x.toFixed(1)} ${cp1L.y.toFixed(1)}, ${cp2L.x.toFixed(1)} ${cp2L.y.toFixed(1)}, ${p2L.x.toFixed(1)} ${p2L.y.toFixed(1)}" ` +
-        `stroke="url(#${gradId})" stroke-width="${trackWidth}" fill="none" stroke-opacity="${trackOpacity}" stroke-linecap="round"/>`
+        `stroke="url(#${gradId})" stroke-width="${trackStrokeWidth}" fill="none" stroke-opacity="${trackOpacity}" stroke-linecap="round"/>`
       );
 
       branchesSVG.push(
         `    <!-- Right Track -->\n` +
         `    <path d="M ${p1R.x.toFixed(1)} ${p1R.y.toFixed(1)} C ${cp1R.x.toFixed(1)} ${cp1R.y.toFixed(1)}, ${cp2R.x.toFixed(1)} ${cp2R.y.toFixed(1)}, ${p2R.x.toFixed(1)} ${p2R.y.toFixed(1)}" ` +
-        `stroke="url(#${gradId})" stroke-width="${trackWidth}" fill="none" stroke-opacity="${trackOpacity}" stroke-linecap="round"/>`
+        `stroke="url(#${gradId})" stroke-width="${trackStrokeWidth}" fill="none" stroke-opacity="${trackOpacity}" stroke-linecap="round"/>`
       );
 
-      // Vector Wood Grain (Serat Kayu) inside the trunk path
-      // Grain 1: Left inner grain line
-      const g1_p1 = { x: p1.x - w1 * 0.22, y: p1.y };
-      const g1_p2 = { x: p2.x - nx * (w2 * 0.22), y: p2.y - ny * (w2 * 0.22) };
-      const g1_cp1 = { x: cp1.x - w1 * 0.18, y: cp1.y };
-      const g1_cp2 = { x: cp2.x - w2 * 0.18, y: cp2.y };
+      // Vector Wood Grain (Serat Kayu) inside trunk & mid-branches
+      if (w1 >= 6.5 * frameScale) {
+        // Grain 1: Left inner grain line
+        const g1_p1 = { x: p1.x - w1 * 0.22, y: p1.y };
+        const g1_p2 = { x: p2.x - nx * (w2 * 0.22), y: p2.y - ny * (w2 * 0.22) };
+        const g1_cp1 = { x: cp1.x - w1 * 0.18, y: cp1.y };
+        const g1_cp2 = { x: cp2.x - w2 * 0.18, y: cp2.y };
 
-      woodGrainSVG.push(
-        `    <path d="M ${g1_p1.x.toFixed(1)} ${g1_p1.y.toFixed(1)} C ${g1_cp1.x.toFixed(1)} ${g1_cp1.y.toFixed(1)}, ${g1_cp2.x.toFixed(1)} ${g1_cp2.y.toFixed(1)}, ${g1_p2.x.toFixed(1)} ${g1_p2.y.toFixed(1)}" ` +
-        `stroke="${woodGrainColorDark}" stroke-width="1.1" stroke-dasharray="10 4 18 5" fill="none" opacity="0.6"/>`
-      );
+        woodGrainSVG.push(
+          `    <path d="M ${g1_p1.x.toFixed(1)} ${g1_p1.y.toFixed(1)} C ${g1_cp1.x.toFixed(1)} ${g1_cp1.y.toFixed(1)}, ${g1_cp2.x.toFixed(1)} ${g1_cp2.y.toFixed(1)}, ${g1_p2.x.toFixed(1)} ${g1_p2.y.toFixed(1)}" ` +
+          `stroke="${woodGrainColorDark}" stroke-width="1.1" stroke-dasharray="10 4 18 5" fill="none" opacity="0.6"/>`
+        );
 
-      // Grain 2: Center marrow luminescent line
-      woodGrainSVG.push(
-        `    <path d="M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} C ${cp1.x.toFixed(1)} ${cp1.y.toFixed(1)}, ${cp2.x.toFixed(1)} ${cp2.y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}" ` +
-        `stroke="${woodGrainColorLight}" stroke-width="0.9" stroke-dasharray="6 8" fill="none" opacity="0.75"/>`
-      );
+        // Grain 2: Center marrow luminescent line
+        woodGrainSVG.push(
+          `    <path d="M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} C ${cp1.x.toFixed(1)} ${cp1.y.toFixed(1)}, ${cp2.x.toFixed(1)} ${cp2.y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.x.toFixed(1)}" ` +
+          `stroke="${woodGrainColorLight}" stroke-width="0.9" stroke-dasharray="6 8" fill="none" opacity="0.75"/>`
+        );
 
-      // Grain 3: Right inner grain line
-      const g3_p1 = { x: p1.x + w1 * 0.22, y: p1.y };
-      const g3_p2 = { x: p2.x + nx * (w2 * 0.22), y: p2.y + ny * (w2 * 0.22) };
-      const g3_cp1 = { x: cp1.x + w1 * 0.18, y: cp1.y };
-      const g3_cp2 = { x: cp2.x + w2 * 0.18, y: cp2.y };
+        // Grain 3: Right inner grain line
+        const g3_p1 = { x: p1.x + w1 * 0.22, y: p1.y };
+        const g3_p2 = { x: p2.x + nx * (w2 * 0.22), y: p2.y + ny * (w2 * 0.22) };
+        const g3_cp1 = { x: cp1.x + w1 * 0.18, y: cp1.y };
+        const g3_cp2 = { x: cp2.x + w2 * 0.18, y: cp2.y };
 
-      woodGrainSVG.push(
-        `    <path d="M ${g3_p1.x.toFixed(1)} ${g3_p1.y.toFixed(1)} C ${g3_cp1.x.toFixed(1)} ${g3_cp1.y.toFixed(1)}, ${g3_cp2.x.toFixed(1)} ${g3_cp2.y.toFixed(1)}, ${g3_p2.x.toFixed(1)} ${g3_p2.y.toFixed(1)}" ` +
-        `stroke="${woodGrainColorDark}" stroke-width="1.0" stroke-dasharray="14 6 8 4" fill="none" opacity="0.5"/>`
-      );
+        woodGrainSVG.push(
+          `    <path d="M ${g3_p1.x.toFixed(1)} ${g3_p1.y.toFixed(1)} C ${g3_cp1.x.toFixed(1)} ${g3_cp1.y.toFixed(1)}, ${g3_cp2.x.toFixed(1)} ${g3_cp2.y.toFixed(1)}, ${g3_p2.x.toFixed(1)} ${g3_p2.y.toFixed(1)}" ` +
+          `stroke="${woodGrainColorDark}" stroke-width="1.0" stroke-dasharray="14 6 8 4" fill="none" opacity="0.5"/>`
+        );
+      }
 
       // Attach modular leaf cluster or fruit symbol at terminal branch endpoints
       if (node.level >= 4) {
         const clusterScale = (node.frameScale * 0.95).toFixed(2);
         leafFruitInstancesSVG.push(
           `    <!-- Instanced Leaf Cluster at Node ${node.id} -->\n` +
-          `    <use href="#leaf-cluster" x="${p2.x.toFixed(1)}" y="${(p2.y - 12 * frameScale).toFixed(1)}" transform="scale(${clusterScale}) transform-origin="${p2.x.toFixed(1)} ${(p2.y - 12 * frameScale).toFixed(1)}""/>`
+          `    <use href="#leaf-cluster" x="${p2.x.toFixed(1)}" y="${(p2.y - 12 * frameScale).toFixed(1)}" transform="scale(${clusterScale})" />`
         );
 
         if (node.level >= 5) {
@@ -323,12 +333,12 @@ export function generateTreeOfLifeSVG(
       }
     });
 
-    // Root tendrils beneath Level 0 (Uyut)
+    // Root tendrils beneath Level 0 (Uyut) - thick anchor roots (12px-20px foundation zone)
     nodes.filter(n => n.level === 0).forEach(root => {
       const rx = cx + root.x;
       const ry = cy + root.y;
       const rootColor = isDarkMode ? 'rgba(217, 119, 6, 0.7)' : 'rgba(180, 83, 9, 0.8)';
-      const rootW = (2.6 * frameScale).toFixed(1);
+      const rootW = Math.max(2.8, 3.6 * frameScale).toFixed(1);
 
       [-26 * frameScale, 0, 26 * frameScale].forEach((offset, idx) => {
         const x1 = (rx + offset).toFixed(1);
